@@ -1,22 +1,20 @@
 // 未编译API,需要引入polyfill
 import 'core-js'
-import Dragger from './package/main'
+import Sorter from './package/main'
 
 // 一般用法
-const dragger = new Dragger(document.getElementById('drag-wrap'));
-const dragger1 = new Dragger(document.getElementById('row-drag'), {dir: 'x'});
-
-// 结合MVVM框架使用
+const dragger2 = new Sorter(document.getElementById('free'), {dir: 'free'})
+console.log(dragger2)
 
 new window.Vue({
   el: '#app',
   data() {
 	return {
-	  list: [1, 2, 3, 4],
+	  list: [1, 2, 3, 4, 5, 6, 7, 8],
 	}
   },
   mounted() {
-	this.dragger = new Dragger(this.$refs.list, {
+	this.dragger = new Sorter(this.$refs.list, {
 	  change: false,
 	})
 	this.dragger.on('drag-over', pos => {
@@ -39,9 +37,9 @@ new window.Vue({
   },
   template: `
   <div class="app">
-  <ul class="list" ref="list">
-  <li class="item" v-for="it in list" :key="it">item {{it}}</li>
-</ul>
-</div>
+	<ul class="free list" ref="list">
+		<li class="item" v-for="it in list" :key="it">item {{it}}</li>
+	</ul>
+  </div>
   `,
 });

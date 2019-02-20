@@ -14,9 +14,9 @@ module.exports = merge(base, {
   entry: root('src/package/main.js'),
   output: {
 	path: path.resolve(__dirname, '../lib'),
-	filename: 'shorter.js',
+	filename: 'sorter.js',
 	publicPath: '/',
-	library: 'Shorter',
+	library: 'Sorter',
 	libraryTarget: 'umd',
 	libraryExport: 'default', // 需要暴露的模块
 	umdNamedDefine: true,
