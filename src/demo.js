@@ -3,7 +3,7 @@ import 'core-js'
 import Sorter from './package/main'
 
 // 一般用法
-const dragger2 = new Sorter(document.getElementById('free'), {dir: 'free'})
+const dragger2 = new Sorter(document.getElementById('free'))
 console.log(dragger2)
 
 new window.Vue({

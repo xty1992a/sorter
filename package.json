@@ -1,9 +1,9 @@
 {
   "name": "@redbuck/sorter",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "drag to sort element",
-  "main": "lib/short.js",
-  "unpkg": "lib/short.js",
+  "main": "lib/sorter.js",
+  "unpkg": "lib/sorter.js",
   "directories": {
     "lib": "lib"
   },
