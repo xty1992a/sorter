@@ -36,7 +36,7 @@ new Sorter(document.getElementById('free'))
 
 2. 结合MVVM框架
 以VUE为例
-```
+```javascript
   mounted() {
 	this.dragger = new Sorter(this.$refs.list, {
 	  change: false,
@@ -50,7 +50,7 @@ new Sorter(document.getElementById('free'))
   }
 ```
 知道了需要交换位置的元素,开发者可以自行操作数据,示例如下
-```
+```javascript
 	changeItem({source, target}) {
 	  let list = this.list;
 	  let temp = list.splice(source, 1);
