@@ -74,3 +74,19 @@ export const isMobile = (() => {
   }
   return !flag;
 })()
+
+let supportsPassive = false;
+try {
+  var opts = Object.defineProperty({}, 'passive', {
+	get: function () {
+	  supportsPassive = true;
+	},
+  });
+  window.addEventListener('test', null, opts);
+} catch (e) {
+  console.log('not support passive')
+}
+
+export const canPassive = supportsPassive
+
+export const passiveFlag = isMobile && supportsPassive ? {passive: false} : false

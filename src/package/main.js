@@ -1,7 +1,7 @@
 /**
  * Created by TY-xie on 2018/3/29.
  */
-import {css, getParentByClassName, isMobile} from './dom'
+import {css, getParentByClassName, isMobile, passiveFlag} from './dom'
 
 //  region 工具函数
 class Rect {
@@ -156,9 +156,9 @@ export default class Main extends EmitAble {
 
   // 监听事件
   listen() {
-	this.$el.addEventListener(events.down, this.down)
-	this.$el.addEventListener(events.move, this.move)
-	document.addEventListener(events.up, this.up)
+	this.$el.addEventListener(events.down, this.down, passiveFlag)
+	this.$el.addEventListener(events.move, this.move, passiveFlag)
+	document.addEventListener(events.up, this.up, passiveFlag)
   }
 
   unbindListener() {
@@ -273,8 +273,8 @@ export default class Main extends EmitAble {
   }
 
   up = (e) => {
-	e.preventDefault()
 	if (!this.dragStart) return
+	e.preventDefault()
 	let targetIndex = this.hidIndex
 	this.dragStart = false
 	this.point = null

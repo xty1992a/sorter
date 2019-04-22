@@ -3,7 +3,7 @@ import 'core-js'
 import Sorter from './package/main'
 
 // 一般用法
-const dragger2 = new Sorter(document.getElementById('free'))
+const dragger2 = new window.Sorter(document.getElementById('free'))
 console.log(dragger2)
 
 new window.Vue({
@@ -13,8 +13,11 @@ new window.Vue({
 	  list: [1, 2, 3, 4, 5, 6, 7, 8],
 	}
   },
+  created() {
+	this.list = [...Array(40)].map((n, i) => i)
+  },
   mounted() {
-	this.dragger = new Sorter(this.$refs.list, {
+	this.dragger = new window.Sorter(this.$refs.list, {
 	  change: false,
 	})
 	this.dragger.on('drag-over', pos => {
