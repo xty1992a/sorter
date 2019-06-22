@@ -129,11 +129,12 @@ export default class Main extends EmitAble {
 
         let list = [...parent.children];
 
-        list = list.map((it, index) => {
-            if (index === source) return list[target]
-            if (index === target) return list[source]
-            return it
-        })
+        // 取出被拖拽元素
+        let temp = list.splice(source, 1);
+        // 截取开头到被交换位置的元素
+        let start = list.splice(0, target);
+        // 组装成结果数组
+        list = [...start, ...temp, ...list];
 
 
         // 用fragment优化dom操作.
