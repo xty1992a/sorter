@@ -88,7 +88,8 @@ class EmitAble {
 const initialOption = {
     change: true,
     handlerClassName: 'drag-item', // 把手className
-    dragClassName: 'drag-item' // 可拖拽项的className
+    dragClassName: 'drag-item', // 可拖拽项的className
+    fireTime: 0 //触发时间
 };
 
 
@@ -102,6 +103,8 @@ export default class Main extends EmitAble {
     dragIndex = -1        // 手指/鼠标落点的索引
     moveRect = null
     destroyed = false
+
+    timer = 0  //长按计时器
 
     constructor(el, opt) {
         super()
@@ -160,13 +163,13 @@ export default class Main extends EmitAble {
 
     // 监听事件
     listen() {
-        this.$el.addEventListener(events.down, this.down, passiveFlag)
+        this.$el.addEventListener(events.down, this.$options.fireTime ? this.downHandler : this.down, passiveFlag)
         this.$el.addEventListener(events.move, this.move, passiveFlag)
         document.addEventListener(events.up, this.up, passiveFlag)
     }
 
     unbindListener() {
-        this.$el.removeEventListener(events.down, this.down)
+        this.$el.removeEventListener(events.down, this.$options.fireTime ? this.downHandler : this.down)
         this.$el.removeEventListener(events.move, this.move)
         document.removeEventListener(events.up, this.up)
     }
@@ -225,6 +228,15 @@ export default class Main extends EmitAble {
         return el
     }
 
+    downHandler = (e) => {
+        //console.log('按下');
+        this.timer = setTimeout(() => {
+            clearTimeout(this.timer);
+            this.timer = 0;
+            this.down(e);
+        }, this.$options.fireTime)
+    }
+
     down = (e) => {
         if (this.destroyed) return
         const handler = getParentByClassName(e.target, this.$options.handlerClassName)
@@ -260,6 +272,9 @@ export default class Main extends EmitAble {
     }
 
     move = (e) => {
+        clearTimeout(this.timer);
+        this.timer = 0;
+
         if (this.destroyed) return
         if (!this.dragStart) return
         e.preventDefault()
@@ -281,8 +296,18 @@ export default class Main extends EmitAble {
     }
 
     up = (e) => {
+        //console.log('松开')
+        if (this.timer) {
+            clearTimeout(this.timer);
+            this.timer = 0;
+            //console.log('点击了')
+        } else {
+            //console.log('长按了')
+        }
         if (this.destroyed) return
         if (!this.dragStart) return
+
+
         e.preventDefault()
         let targetIndex = this.hidIndex
         this.dragStart = false
