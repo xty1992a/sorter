@@ -150,7 +150,7 @@ export default class Main extends EmitAble {
     // 获取元素槛值
     freshThreshold() {
         if (this.destroyed) return
-        this.children = [...this.$el.children]
+        this.children = [...this.$el.getElementsByClassName(this.$options.handlerClassName)]
         this.children.forEach((child, index) => {
             child.classList.add(this.$options.dragClassName)
             child.dataset.index = index
