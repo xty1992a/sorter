@@ -234,6 +234,20 @@ export default class Main extends EmitAble {
             clearTimeout(this.timer);
             this.timer = 0;
             this.down(e);
+
+            try {
+                if (api.systemType === 'ios') {
+                    api.require('vibrateUtil').shortPop();
+                } else {
+                    // api.notification({
+                    //     vibrate: [0, 50]
+                    // });
+                    // 好像安卓长按自带震动
+                }
+            } catch (e) {
+                //console.log('请使用APICloud和vibrateUtil模块')
+            }
+
         }, this.$options.fireTime)
     }
 
