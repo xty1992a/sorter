@@ -88,7 +88,8 @@ class EmitAble {
 const initialOption = {
     change: true,
     handlerClassName: 'drag-item', // 把手className
-    dragClassName: 'drag-item' // 可拖拽项的className
+		dragClassName: 'drag-item', // 可拖拽项的className
+		disableClassName: 'sorter-disabled'
 };
 
 
@@ -227,8 +228,10 @@ export default class Main extends EmitAble {
 
     down = (e) => {
         if (this.destroyed) return
-        const handler = getParentByClassName(e.target, this.$options.handlerClassName)
-        if (!handler) return
+				const handler = getParentByClassName(e.target, this.$options.handlerClassName);
+				if (!handler) return
+				const disableEl = getParentByClassName(e.target, this.$options.disableClassName);
+				if(disableEl)return
         let target = getParentByClassName(e.target, this.$options.dragClassName)
         if (!target) return
         this.moved = false

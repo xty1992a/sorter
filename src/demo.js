@@ -44,9 +44,9 @@ new window.Vue({
   <div class="app">
 	<ul class="free list" ref="list">
 		<li class="item" v-for="it in list" :key="it">
-		<p class="handler"></p>
-		<span>item {{it}}</span>
-</li>
+				<p class="handler"><span class="del-btn sorter-disabled"></span></p>
+				<span>item {{it}}</span>
+		</li>
 	</ul>
   </div>
   `,
