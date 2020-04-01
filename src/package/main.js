@@ -88,8 +88,8 @@ class EmitAble {
 const initialOption = {
     change: true,
     handlerClassName: 'drag-item', // 把手className
-		dragClassName: 'drag-item', // 可拖拽项的className
-		disableClassName: 'sorter-disabled'
+    dragClassName: 'drag-item', // 可拖拽项的className
+    disableClassName: 'sorter-disabled'
 };
 
 
@@ -240,6 +240,7 @@ export default class Main extends EmitAble {
         let {clientX, clientY} = e.touches ? e.touches[0] : e
         this.drag = target
         let move = this.moveRect = helper.getPosOfParent(this.drag)
+        this.cachedStyle = target.getAttribute('style')
         css(target, {
             zIndex: 10,
             width: move.width + 'px',
@@ -292,7 +293,7 @@ export default class Main extends EmitAble {
         this.point = null
         this.$el.removeChild(this.$holderEl)
         this.$holderEl = null
-        this.drag.style = null
+        this.drag.setAttribute('style',this.cachedStyle)
         this.drag.classList.remove('drag-handler')
         let gapTime = new Date().getTime() - this.downTime
         if (this.moved && gapTime > 100) {

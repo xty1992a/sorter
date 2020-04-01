@@ -1,6 +1,6 @@
 {
   "name": "@redbuck/sorter",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "description": "drag to sort element",
   "main": "lib/sorter.js",
   "unpkg": "lib/sorter.js",
