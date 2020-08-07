@@ -1,7 +1,27 @@
 /**
  * Created by TY-xie on 2018/3/29.
  */
-import { css, getParentByClassName, isMobile, passiveFlag } from "./dom";
+import {
+  addClass,
+  removeClass,
+  css,
+  addStyle,
+  getParentByClassName,
+  isMobile,
+  passiveFlag,
+} from "./dom";
+
+// 缓存可能存在的同名对象
+const oldSorter = window.Sorter;
+addStyle(`
+.sorter-item__on-drag-start{
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  transition: .2s;
+}
+.sorter-item__on-drag{
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+`);
 
 //  region 工具函数
 class Rect {
@@ -37,8 +57,6 @@ const helper = {
       height: cR.height,
       top: cR.top - pR.top,
       left: cR.left - pR.left,
-      // right: cR.right - pR.left,
-      // bottom: cR.bottom - pR.top,  // 子元素的bottom为距离父元素顶部的距离
       index: el.dataset.hasOwnProperty("index") ? +el.dataset.index : -1,
     });
   },
@@ -87,12 +105,16 @@ class EmitAble {
 // 默认参数
 const initialOption = {
   change: true,
-  handlerClassName: "drag-item", // 把手className
-  dragClassName: "drag-item", // 可拖拽项的className
+  handlerClassName: "sorter-item", // 把手className
+  sorterItemClassName: "sorter-item", // 可拖拽项的className
   disableClassName: "sorter-disabled",
+  onDragClassName: "sorter-item__on-drag",
+  onDragStartClassName: "sorter-item__on-drag-start",
+  pressDuration: 0, // 长按多久可拖拽,默认无需长按
+  vibrate: () => void 0,
 };
 
-export default class Main extends EmitAble {
+export default class Sorter extends EmitAble {
   // region props
   children = [];
   rectList = []; // 元素的位置数组
@@ -107,10 +129,32 @@ export default class Main extends EmitAble {
     super();
     this.$el = el;
     this.$options = { ...initialOption, ...opt };
+    if (!opt.hasOwnProperty("vibrate")) {
+      this.$options.vibrate = () => {
+        if (!this.$options.pressDuration) return;
+        try {
+          window.navigator.vibrate && window.navigator.vibrate(100);
+        } catch (e) {
+          console.log("vibrate error", e);
+        }
+      };
+    }
     this.$init();
   }
 
   // endregion
+
+  noticeDragStart(target) {
+    try {
+      this.$options.vibrate && this.$options.vibrate();
+      addClass(target, this.$options.onDragStartClassName);
+      setTimeout(() => {
+        removeClass(target, this.$options.onDragStartClassName);
+      }, 200);
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
   get currentRect() {
     return this.rectList[this.dragIndex] || null;
@@ -149,10 +193,14 @@ export default class Main extends EmitAble {
     if (this.destroyed) return;
     this.children = [...this.$el.children];
     this.children.forEach((child, index) => {
-      child.classList.add(this.$options.dragClassName);
+      addClass(child, this.$options.sorterItemClassName);
       child.dataset.index = index;
     });
     this.rectList = this.children.map((child) => helper.getPosOfParent(child));
+  }
+
+  fresh() {
+    this.freshThreshold();
   }
 
   // 监听事件
@@ -221,26 +269,15 @@ export default class Main extends EmitAble {
       this.$options.disableClassName
     );
     if (disableEl) return;
-    let target = getParentByClassName(e.target, this.$options.dragClassName);
+    let target = getParentByClassName(
+      e.target,
+      this.$options.sorterItemClassName
+    );
     if (!target) return;
+    this.fire("drag-down");
     this.moved = false;
     this.downTime = new Date().getTime();
-    this.dragStart = true;
     let { clientX, clientY } = e.touches ? e.touches[0] : e;
-    this.drag = target;
-    let move = (this.moveRect = helper.getPosOfParent(this.drag));
-    this.cachedStyle = target.getAttribute("style");
-    css(target, {
-      zIndex: 10,
-      width: move.width + "px",
-      height: move.height + "px",
-      left: move.left + "px",
-      top: move.top + "px",
-      position: "absolute",
-    });
-    this.dragIndex = +target.dataset.index;
-    target.classList.add("drag-handler");
-    this.insetHolder(move.index);
     let rect = target.getBoundingClientRect();
     this.point = {
       posX: clientX - rect.left,
@@ -250,13 +287,38 @@ export default class Main extends EmitAble {
       moveX: clientX,
       moveY: clientY,
     };
+
+    // 延迟一段时间再处理dom
+    this.__pressTimer = setTimeout(() => {
+      this.fire("drag-start");
+      this.noticeDragStart(target);
+      this.drag = target;
+      this.dragStart = true;
+      this.cachedStyle = target.getAttribute("style");
+      let move = (this.moveRect = helper.getPosOfParent(this.drag));
+      this.dragIndex = +target.dataset.index;
+
+      css(target, {
+        zIndex: 10,
+        width: move.width + "px",
+        height: move.height + "px",
+        left: move.left + "px",
+        top: move.top + "px",
+        position: "absolute",
+      });
+
+      addClass(target, this.$options.onDragClassName);
+      this.insetHolder(move.index);
+    }, this.$options.pressDuration);
   };
 
   move = (e) => {
+    // 一旦移动取消延迟的start操作
+    clearTimeout(this.__pressTimer);
     if (this.destroyed) return;
     if (!this.dragStart) return;
-    e.preventDefault();
     this.moved = true;
+    e.preventDefault();
     let point = e.touches ? e.touches[0] : e;
     let { clientX, clientY } = point;
     let { startX, startY } = this.point;
@@ -274,6 +336,8 @@ export default class Main extends EmitAble {
   };
 
   up = (e) => {
+    // 一旦移动取消延迟的start操作
+    clearTimeout(this.__pressTimer);
     if (this.destroyed) return;
     if (!this.dragStart) return;
     e.preventDefault();
@@ -282,8 +346,8 @@ export default class Main extends EmitAble {
     this.point = null;
     this.$el.removeChild(this.$holderEl);
     this.$holderEl = null;
-    this.drag.setAttribute("style", this.cachedStyle);
-    this.drag.classList.remove("drag-handler");
+    this.drag.setAttribute("style", this.cachedStyle || "");
+    removeClass(this.drag, this.$options.onDragClassName);
     let gapTime = new Date().getTime() - this.downTime;
     if (this.moved && gapTime > 100) {
       let pos = {
@@ -307,5 +371,10 @@ export default class Main extends EmitAble {
   destroy() {
     this.destroyed = true;
     this.unbindListener();
+  }
+
+  static noConflict() {
+    window.Sorter = oldSorter;
+    return Sorter;
   }
 }

@@ -1,11 +1,15 @@
 // 未编译API,需要引入polyfill
+import eruda from "eruda";
+// eruda.init();
 import "core-js";
 import Sorter from "./package/main";
 
 window.Sorter = Sorter;
 // 一般用法
-const dragger2 = new window.Sorter(document.getElementById("free"));
-console.log(dragger2);
+const sorter = new window.Sorter(document.getElementById("free"), {
+  pressDuration: 300,
+});
+console.log(sorter);
 
 new window.Vue({
   el: "#app",
