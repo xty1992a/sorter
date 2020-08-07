@@ -315,6 +315,7 @@ export default class Sorter extends EmitAble {
   move = (e) => {
     // 一旦移动取消延迟的start操作
     clearTimeout(this.__pressTimer);
+    removeClass(this.drag, this.$options.onDragStartClassName);
     if (this.destroyed) return;
     if (!this.dragStart) return;
     this.moved = true;
