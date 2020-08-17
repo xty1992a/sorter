@@ -1,5 +1,4 @@
 // 未编译API,需要引入polyfill
-import eruda from "eruda";
 // eruda.init();
 import "core-js";
 import Sorter from "./package/main";
@@ -7,6 +6,7 @@ import Sorter from "./package/main";
 window.Sorter = Sorter;
 // 一般用法
 const sorter = new window.Sorter(document.getElementById("free"), {
+  animateDuration: 0,
   pressDuration: 300,
 });
 console.log(sorter);
@@ -21,6 +21,7 @@ new window.Vue({
   mounted() {
     this.dragger = new window.Sorter(this.$refs.list, {
       change: false,
+      animateDuration: 300,
       handlerClassName: "handler",
     });
     this.dragger.on("drag-over", (pos) => {
@@ -31,7 +32,7 @@ new window.Vue({
     });
   },
   methods: {
-    changeItem({ source, target }) {
+    changeItem({source, target}) {
       this.list = this.dragger.sortList(this.list, source, target);
     },
   },
