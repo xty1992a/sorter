@@ -1,7 +1,15 @@
 /**
  * Created by TY-xie on 2018/3/29.
  */
-import {addClass, addStyle, css, getParentByClassName, isMobile, passiveFlag, removeClass,} from "./dom";
+import {
+  addClass,
+  addStyle,
+  css,
+  getParentByClassName,
+  isMobile,
+  passiveFlag,
+  removeClass,
+} from "./dom";
 
 // 缓存可能存在的同名对象
 const oldSorter = window.Sorter;
@@ -66,13 +74,13 @@ const helper = {
 
   // 点是否在矩形内
   isHit(point, rect) {
-    let {x, y} = point;
-    let {left, top, right, bottom} = rect;
+    let { x, y } = point;
+    let { left, top, right, bottom } = rect;
     return !(x < left || x > right || y < top || y > bottom);
   },
 };
 
-const order = ([min, max]) => min < max ? [min, max] : [max, min];
+const order = ([min, max]) => (min < max ? [min, max] : [max, min]);
 
 // 事件名称
 const events = {
@@ -123,7 +131,7 @@ export default class Sorter extends EmitAble {
   constructor(el, opt) {
     super();
     this.$el = el;
-    this.$options = {...initialOption, ...opt};
+    this.$options = { ...initialOption, ...opt };
     if (!opt.hasOwnProperty("vibrate")) {
       this.$options.vibrate = () => {
         if (!this.$options.pressDuration) return;
@@ -166,7 +174,7 @@ export default class Sorter extends EmitAble {
   }
 
   // 自动交换元素
-  changeItem({source, target}) {
+  changeItem({ source, target }) {
     if (source === target) return;
     const parent = this.$el;
 
@@ -229,51 +237,66 @@ export default class Sorter extends EmitAble {
     this.hidIndex = hitIndex;
 
     let index = move.index;
+    let offset = 0;
     if (hitIndex === move.index) {
     }
     // 往左上移动
     else if (hitIndex < move.index) {
+      offset = 1;
       index = hitIndex;
     }
     // 往右下移动
     else {
+      offset = -1;
       index = hitIndex + 1;
     }
-    this.animate(index);
+    this.animate(index, offset);
     // this.insetHolder(index);
   }
 
-  animate(index) {
+  animate(index, offset) {
     const duration = this.$options.animateDuration;
     if (duration <= 0) return this.insetHolder(index);
-    if (!this.hasOwnProperty("lastInsetIndex")) this.lastInsetIndex = this.moveRect.index;
+    if (!this.hasOwnProperty("lastInsetIndex"))
+      this.lastInsetIndex = this.moveRect.index;
     //过滤出受影响的dom
     const [min, max] = order([index, this.lastInsetIndex]);
     // 保存每次的插入索引
     this.lastInsetIndex = index;
-    const effectElList = this.children.slice(min, max);
+    const effectElList = this.children
+      .slice(min, max)
+      .map((it) => (it === this.drag ? this.$holderEl : it));
 
+    // let targetElList = this.children
+    //   .slice(min + offset, max + offset)
+    //   .map((it) => (it === this.drag ? this.$holderEl : it));
+
+    // FLIP动画
     // 获取其位置信息
-    const rectList = effectElList.map((child) => helper.getPosOfParent(child));
+    const rectList = effectElList.map(helper.getPosOfParent);
     // 调整holder位置
     this.insetHolder(index);
+    // const targetRectList = targetElList.map(helper.getPosOfParent);
+    const targetRectList = effectElList.map(helper.getPosOfParent);
     // 延时保证逻辑在位置交换完（insetHolder）之后执行
     effectElList.forEach((child, index) => {
       if (child === this.drag) return;
       // 此时获取的位置信息是交换后的
-      const now = helper.getPosOfParent(child);
+      const now = targetRectList[index]; //helper.getPosOfParent(child);
       const old = rectList[index];
 
       css(child, {
         // 使dom在当前位置偏移，回到交换前的位置
-        transform: `translate3d(${old.left - now.left}px, ${old.top - now.top}px, 0)`
+        transform: `translate3d(${old.left - now.left}px, ${
+          old.top - now.top
+        }px, 0)`,
       });
       // 再次延时，使上面的位置偏移生效
       setTimeout(() => {
         // 取消偏移，dom回到原位（交换后的位置），并设置过渡，使效果可见
         css(child, {
           transition: duration + "ms",
-          transform: "translate3d(0,0,0)"
+          transform: "translate3d(0,0,0)",
         });
         // 过渡结束，清除样式
         setTimeout(() => {
@@ -292,7 +315,7 @@ export default class Sorter extends EmitAble {
   getHolder() {
     if (this.$holderEl) return this.$el.removeChild(this.$holderEl);
     let el = (this.$holderEl = document.createElement("div"));
-    let {width, height} = this.moveRect;
+    let { width, height } = this.moveRect;
     el.className = "sorter-holder";
     el.style.width = width + "px";
     el.style.height = height + "px";
@@ -321,7 +344,7 @@ export default class Sorter extends EmitAble {
     this.fire("drag-down");
     this.moved = false;
     this.downTime = new Date().getTime();
-    let {clientX, clientY} = e.touches ? e.touches[0] : e;
+    let { clientX, clientY } = e.touches ? e.touches[0] : e;
     let rect = target.getBoundingClientRect();
     this.point = {
       posX: clientX - rect.left,
@@ -365,8 +388,8 @@ export default class Sorter extends EmitAble {
     this.moved = true;
     e.preventDefault();
     let point = e.touches ? e.touches[0] : e;
-    let {clientX, clientY} = point;
-    let {startX, startY} = this.point;
+    let { clientX, clientY } = point;
+    let { startX, startY } = this.point;
     let deltaY = clientY - startY;
     let deltaX = clientX - startX;
     this.moveRect.top = this.currentRect.top + deltaY;
